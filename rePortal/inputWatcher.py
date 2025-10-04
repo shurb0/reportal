@@ -5,7 +5,7 @@ import json
 
 class InputWatcher(DirectObject):
     def __init__(self):
-        with open(os.path.dirname(__file__) + r"\binds.json","r") as file:
+        with open(os.path.join(os.path.dirname(__file__), "binds.json"), "r") as file:
             self.bindJsonString = file.read()
             file.close()
         self.bindJson = json.loads(self.bindJsonString)

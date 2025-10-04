@@ -26,6 +26,7 @@ framebuffer-multisample 0
 framebuffer-srgb 0
 multisamples 2
 framebuffer-stencil false
+audio-library-name p3openal_audio
 """
 
 loadPrcFileData("", configVars)
@@ -46,7 +47,7 @@ class App(ShowBase):
         self.wp.setMouseMode(WindowProperties.M_relative)
         self.wp.setRawMice(True)
         self.win.requestProperties(self.wp)
-        
+
         self.render.setAntialias(AntialiasAttrib.MMultisample)
         
     # get refresh rate

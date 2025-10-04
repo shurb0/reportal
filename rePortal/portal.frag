@@ -18,5 +18,5 @@ void main()
     }
     vec2 resolution = vec2(2050,2050);
     vec2 uv = gl_FragCoord.xy / resolution;
-    p3d_FragColor = texture2D(p3d_Texture0,uv);
+    p3d_FragColor = texture(p3d_Texture0,uv);
 };
