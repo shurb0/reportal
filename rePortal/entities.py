@@ -226,6 +226,7 @@ class Cube:
     
     def resetPos(self):
         self.boxNP.setPos(self.startPos)
+        self.boxCollisionNode.setLinearVelocity(Vec3())
         self.velocity = Vec3()
     
     def processDynamicCollision(self, pairResult, contactNode, dt):  # chat im cooked

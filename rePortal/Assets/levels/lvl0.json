@@ -3,7 +3,7 @@
     "modelPath": "Assets/models/lvl0.glb",
     "modelPos": [0,0,0],
     "modelHpr": [90,270,90],
-    "playerStartPos": [0,0,1.25],
+    "playerStartPos": [0,0,1],
     "playerStartHpr": [90,0,0],
     "nextLevel": "lvl1",
     "numLinks": 0,

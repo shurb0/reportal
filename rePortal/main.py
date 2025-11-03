@@ -62,7 +62,7 @@ class App(ShowBase):
         self.debugNode.showBoundingBoxes(True)
         self.debugNode.showWireframe(True)
         self.debugNP = self.render.attachNewNode(self.debugNode)
-        self.debugNP.show()
+        # self.debugNP.show()
         
     # bullet physics initialisation
         
@@ -88,7 +88,7 @@ class App(ShowBase):
         
     # map loading
         
-        self.level = LevelLoader("lvl0",self.world,self.worldNP,self.loader,self.render,self.entities)
+        self.level = LevelLoader("lvl0",self.world,self.worldNP,self.loader,self.entities)
         self.player.startPos = self.level.playerStartPos
         self.player.startHpr = self.level.playerStartHpr
         self.player.resetPos()
@@ -128,9 +128,23 @@ class App(ShowBase):
         
         # base.messenger.toggleVerbose()
         
-        self.taskMgr.add(self.update, "update")
+        self.player.resetPos()
+        self.pauseState = False
+        self.pause()
         
     def update(self, task):
+        
+        if self.inputWatcher.isSet("pause"):
+            self.pause()
+            return task.done
+        
+        # if self.pauseState:
+        #     self.showPos()
+        #     self.win.movePointer(0, self.wp.getXSize() // 2, self.wp.getYSize() // 2)
+        #     if self.inputWatcher.isSet("jump"):
+        #         self.pauseState = False
+        #         self.pauseText.destroy()
+        #     return task.cont
         
         dt = globalClock.getDt() # noqa # type: ignore
         
@@ -161,12 +175,21 @@ class App(ShowBase):
         
         self.renderPortals()
         
-        if self.inputWatcher.isSet("quit"):
-            quit()
-        
         if self.player.transitionNode is not None:
             self.tryLevelTransition()
+            return task.done
             
+        return task.cont
+    
+    def pauseUpdate(self, task):
+        self.showPos()
+        if self.inputWatcher.isSet("jump"):
+            self.pauseState = False
+            self.pauseText.destroy()
+            self.taskMgr.doMethodLater(0.2, self.bufferUpdate, "bufferUpdate")
+            self.taskMgr.remove("pauseUpdate")
+            self.win.movePointer(0, self.wp.getXSize() // 2, self.wp.getYSize() // 2)
+            return task.done
         return task.cont
     
     def updateDynamicEntityPositions(self):
@@ -258,8 +281,18 @@ class App(ShowBase):
     def reset(self):
         for entity in self.entities:
             entity[0].resetPos()
-        self.player.velocity = Vec3()
-        self.camera.setHpr(-90,0,0)
+        self.player.resetPos()
+    
+    def pause(self):
+        if not self.pauseState:
+            self.pauseState = True
+            pauseText = "Game paused, press Jump to continue"
+            self.pauseText = OnscreenText(text=pauseText, pos=(0,-0.8), scale=0.07,align=TextNode.ACenter,mayChange=False)
+            self.taskMgr.add(self.pauseUpdate, "pause")
+    
+    def bufferUpdate(self,task):
+        self.taskMgr.add(self.update, "update")
+        return task.done
     
     def getEntityFromNode(self,node):
         for entity in self.entities:
@@ -323,7 +356,7 @@ class App(ShowBase):
         if self.getEntityFromNode(self.player.transitionNode).isActivated and self.level.nextLevel != "end":
             self.cleanupLevel()
             
-            self.level = LevelLoader(self.level.nextLevel,self.world,self.worldNP,self.loader,self.render,self.entities)
+            self.level = LevelLoader(self.level.nextLevel,self.world,self.worldNP,self.loader,self.entities)
             self.entities += self.level.entities
             self.player.startPos = self.level.playerStartPos
             self.player.startHpr = self.level.playerStartHpr
@@ -334,6 +367,9 @@ class App(ShowBase):
                 portal.portal.setTexture(portal.blankTexture,1)
                 portal.portalFrame.setPos(portal.pos)
                 portal.updatePos(portal.pos)
+            
+            self.pause()
+            self.taskMgr.remove("update")
 
 
 app = App()

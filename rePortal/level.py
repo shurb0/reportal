@@ -9,7 +9,7 @@ class LevelLoader:
     """
     Load level model, collision, entities from .json level file
     """
-    def __init__(self,level:str,world,worldNP,loader,render,entities:list = []):
+    def __init__(self,level:str,world,worldNP,loader,entities:list = []):
         self.levelName = level
         self.world = world
         self.worldNP = worldNP

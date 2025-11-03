@@ -159,8 +159,12 @@
         "mouse3-up",
         "ralt-up"
     ],
-    "+quit":
+    "+pause":
     [
         "escape"
+    ],
+    "-pause":
+    [
+        "escape-up"
     ]
 }
