@@ -110,6 +110,11 @@ class App(ShowBase):
         
         self.disableMouse()
         
+    # speedrun timer
+        
+        self.timer = SpeedrunTimer()
+        self.timer.startLevel(self.level.levelName)
+        
     # colour correction
         
         self.filters = CommonFilters(self.win, self.cam)
@@ -291,6 +296,7 @@ class App(ShowBase):
             pauseText = "Game paused, press Jump to continue"
             self.pauseText = OnscreenText(text=pauseText, pos=(0,-0.8), scale=0.07,align=TextNode.ACenter,mayChange=False)
             self.taskMgr.add(self.pauseUpdate, "pause")
+            print(self.timer.stop())
     
     def bufferUpdate(self,task):
         self.taskMgr.add(self.update, "update")
