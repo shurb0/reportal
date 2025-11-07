@@ -139,21 +139,16 @@ class App(ShowBase):
         
         self.player.resetPos()
         self.pauseState = False
+        self.pauseReleased = True
         self.pause()
         
     def update(self, task):
         
-        if self.inputWatcher.isSet("pause"):
+        if not self.inputWatcher.isSet("pause") and not self.pauseReleased:
+            self.pauseReleased = True
+        elif self.inputWatcher.isSet("pause") and self.pauseReleased:
             self.pause()
             return Task.done
-        
-        # if self.pauseState:
-        #     self.showPos()
-        #     self.win.movePointer(0, self.wp.getXSize() // 2, self.wp.getYSize() // 2)
-        #     if self.inputWatcher.isSet("jump"):
-        #         self.pauseState = False
-        #         self.pauseText.destroy()
-        #     return task.cont
         
         dt = globalClock.getDt() # noqa # type: ignore
         
@@ -195,10 +190,15 @@ class App(ShowBase):
     def pauseUpdate(self, task):
         self.showPos()
         self.showTimer()
-        if self.inputWatcher.isSet("jump"):
+        if not self.inputWatcher.isSet("pause"):
+            self.pauseReleased = True
+            return Task.cont
+        elif self.inputWatcher.isSet("pause") and self.pauseReleased:
             self.pauseState = False
+            self.pauseReleased = False
             self.pauseText.destroy()
-            self.taskMgr.doMethodLater(0.05, self.bufferUpdate, "bufferUpdate")
+            # self.taskMgr.doMethodLater(0.05, self.bufferUpdate, "bufferUpdate")
+            self.taskMgr.add(self.update,"update")
             self.taskMgr.remove("pauseUpdate")
             self.win.movePointer(0, self.wp.getXSize() // 2, self.wp.getYSize() // 2)
             self.timer.resume()
@@ -288,7 +288,7 @@ class App(ShowBase):
     def showTimer(self):
         if self.timerText != 0:
             self.timerText.destroy()
-        self.timerText = OnscreenText(text=self.timer.getT(True),pos=(1.75,.9),scale=0.07,align=TextNode.ARight,mayChange=True)
+        self.timerText = OnscreenText(text=self.timer.getT(True),pos=(1.75,.85),scale=0.1,align=TextNode.ARight,mayChange=True)
     
     def showCrosshair(self):
         if self.imageObject is not None:
@@ -302,16 +302,13 @@ class App(ShowBase):
         self.player.resetPos()
     
     def pause(self):
-        if not self.pauseState:
+        if not self.pauseState and self.pauseReleased:
             self.pauseState = True
-            pauseText = "Game paused, press Jump to continue"
+            self.pauseReleased = False
+            pauseText = "Game paused, press Esc to continue"
             self.pauseText = OnscreenText(text=pauseText, pos=(0,-0.8), scale=0.07,align=TextNode.ACenter,mayChange=False)
             self.taskMgr.add(self.pauseUpdate, "pause")
             self.timer.pause()
-    
-    def bufferUpdate(self,task):
-        self.taskMgr.add(self.update, "update")
-        return Task.done
     
     def getEntityFromNode(self,node):
         for entity in self.entities:
