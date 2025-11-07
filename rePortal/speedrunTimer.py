@@ -1,5 +1,6 @@
-from direct.task.Timer import Timer
+from direct.task import Task
 from panda3d.core import ClockObject
+from math import floor
 import os
 import json
 
@@ -12,8 +13,9 @@ class SpeedrunTimer:
     """
     def __init__(self):
         self.currentSession = 0
-        self.currentLevel = -1
-        self.started = 0
+        self.currentLevel = "none"
+        self.running = False
+        self.currentTime = 0
         
         with open(os.path.join(os.path.dirname(__file__), "times.json"), "r") as file:
             timesJsonString = file.read()
@@ -26,17 +28,40 @@ class SpeedrunTimer:
         
         self.sessionDict = {"session": self.currentSession,"times":[]}
     
-    def start(self,t:int,level:str):
-        pass
+    def start(self,t:int = 0, level:str = "none"):
+        self.running = True
+        self.currentLevel = level
+        self.currentTime = t
+        taskMgr.add(self.updateTimer,"timer", sort=5) # noqa # type:ignore
     
     def pause(self):
-        pass
+        self.running = False
     
-    def end(self,output=True):
-        pass
+    def resume(self):
+        self.running = True
+        taskMgr.add(self.updateTimer,"timer", sort=5) # noqa # type:ignore
     
-    def getT(self,formatted=False):
-        pass
+    def end(self, output=True):
+        self.running = False
+        if output:
+            self.sessionDict["times"].append({"level":self.currentLevel,"time":self.currentTime})
+        print(self.sessionDict)
     
-    def setT(self):
-        pass
+    def getT(self, formatted=False):
+        if not formatted:
+            return str(self.currentTime)
+        h = round(self.currentTime / 3600)
+        m = round((self.currentTime % 3600) / 60)
+        s = round((self.currentTime % 60),2)
+        if h == 0:
+            return f"{m}:{s:.2f}"
+        return f"{h}:{m}:{s:.2f}"
+    
+    def setT(self,t):
+        self.currentTime = t
+    
+    def updateTimer(self, task):
+        if not self.running:
+            return Task.done
+        self.currentTime += globalClock.getDt()
+        return Task.cont

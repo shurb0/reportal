@@ -2,6 +2,7 @@ from direct.showbase.ShowBase import ShowBase
 from direct.filter.CommonFilters import CommonFilters
 from direct.gui.OnscreenText import OnscreenText
 from direct.gui.OnscreenImage import OnscreenImage
+from direct.task import Task
 from panda3d.core import (Vec3, Vec2,
                           ClockObject,
                           WindowProperties,
@@ -113,7 +114,8 @@ class App(ShowBase):
     # speedrun timer
         
         self.timer = SpeedrunTimer()
-        self.timer.startLevel(self.level.levelName)
+        self.timer.start(level=self.level.levelName)
+        self.timerText = 0
         
     # colour correction
         
@@ -143,7 +145,7 @@ class App(ShowBase):
         
         if self.inputWatcher.isSet("pause"):
             self.pause()
-            return task.done
+            return Task.done
         
         # if self.pauseState:
         #     self.showPos()
@@ -171,6 +173,8 @@ class App(ShowBase):
         self.showPos()
         self.showCrosshair()
         
+        self.showTimer()
+        
         self.world.doPhysics(dt, 10, 1 / 300)
         
         if self.player.releaseKinematic:
@@ -184,20 +188,22 @@ class App(ShowBase):
         
         if self.player.transitionNode is not None:
             self.tryLevelTransition()
-            return task.done
+            return Task.done
             
-        return task.cont
+        return Task.cont
     
     def pauseUpdate(self, task):
         self.showPos()
+        self.showTimer()
         if self.inputWatcher.isSet("jump"):
             self.pauseState = False
             self.pauseText.destroy()
-            self.taskMgr.doMethodLater(0.2, self.bufferUpdate, "bufferUpdate")
+            self.taskMgr.doMethodLater(0.05, self.bufferUpdate, "bufferUpdate")
             self.taskMgr.remove("pauseUpdate")
             self.win.movePointer(0, self.wp.getXSize() // 2, self.wp.getYSize() // 2)
-            return task.done
-        return task.cont
+            self.timer.resume()
+            return Task.done
+        return Task.cont
     
     def updateDynamicEntityPositions(self):
         for entity in self.entities:
@@ -279,6 +285,11 @@ class App(ShowBase):
         showPos = f"{self.level.title}\npos: {xpos,ypos,zpos}\nvel: {xvel,yvel,zvel}\nang: {h,p}"
         self.posText = OnscreenText(text=showPos, pos=(-1.75,.9), scale=0.07, align=TextNode.ALeft, mayChange=True)
     
+    def showTimer(self):
+        if self.timerText != 0:
+            self.timerText.destroy()
+        self.timerText = OnscreenText(text=self.timer.getT(True),pos=(1.75,.9),scale=0.07,align=TextNode.ARight,mayChange=True)
+    
     def showCrosshair(self):
         if self.imageObject is not None:
             self.imageObject.destroy()
@@ -296,11 +307,11 @@ class App(ShowBase):
             pauseText = "Game paused, press Jump to continue"
             self.pauseText = OnscreenText(text=pauseText, pos=(0,-0.8), scale=0.07,align=TextNode.ACenter,mayChange=False)
             self.taskMgr.add(self.pauseUpdate, "pause")
-            print(self.timer.stop())
+            self.timer.pause()
     
     def bufferUpdate(self,task):
         self.taskMgr.add(self.update, "update")
-        return task.done
+        return Task.done
     
     def getEntityFromNode(self,node):
         for entity in self.entities:
@@ -376,7 +387,11 @@ class App(ShowBase):
                 portal.portalFrame.setPos(portal.pos)
                 portal.updatePos(portal.pos)
             
+            self.timer.end()
+            self.timer.start(level=self.level.levelName)
+            
             self.pause()
+            
             self.taskMgr.remove("update")
 
 
