@@ -9,6 +9,9 @@ from math import sin, cos, radians
 
 
 class Portal:
+    """
+    Portal entity class
+    """
     def __init__(self,isOrange,world,worldNP,render,loader,win,cam,base):
         self.isOrange = isOrange
         self.world = world

@@ -16,6 +16,8 @@ from player import Player
 from level import LevelLoader
 from entities import FloorButton, Cube
 from inputWatcher import InputWatcher
+from speedrunTimer import SpeedrunTimer
+
 
 configVars = """
 show-frame-rate-meter 1

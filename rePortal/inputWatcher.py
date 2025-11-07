@@ -4,6 +4,9 @@ import json
 
 
 class InputWatcher(DirectObject):
+    """
+    Modified DirectObject class to detect inputs (especially mousewheel inputs)
+    """
     def __init__(self):
         with open(os.path.join(os.path.dirname(__file__), "binds.json"), "r") as file:
             self.bindJsonString = file.read()

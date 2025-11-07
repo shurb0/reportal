@@ -15,7 +15,7 @@ type PandaVec3 = Vec3
 
 class Player:
     """
-    Controllable player character
+    Kinematic player controller
     """
     def __init__(self, world, worldNP, render, camera, loader, win, inputWatcher, base):
         self.world = world
