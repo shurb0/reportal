@@ -1,16 +1,19 @@
 from direct.task.Timer import Timer
+from panda3d.core import ClockObject
 import os
 import json
 
+globalClock = ClockObject.getGlobalClock()
 
-class SpeedrunTimer(Timer):
+
+class SpeedrunTimer:
     """
     In game speedrun timer that can save run times
     """
     def __init__(self):
-        super().__init__(Timer)
         self.currentSession = 0
         self.currentLevel = -1
+        self.started = 0
         
         with open(os.path.join(os.path.dirname(__file__), "times.json"), "r") as file:
             timesJsonString = file.read()
@@ -23,11 +26,17 @@ class SpeedrunTimer(Timer):
         
         self.sessionDict = {"session": self.currentSession,"times":[]}
     
-    def startLevel(self, levelName:str):
-        self.currentLevel = levelName
-        self.restart()
+    def start(self,t:int,level:str):
+        pass
     
-    def endLevel(self):
-        self.stop()
-        self.sessionDict["times"].append({"level": self.currentLevel,"time": self.getT()})
-        
+    def pause(self):
+        pass
+    
+    def end(self,output=True):
+        pass
+    
+    def getT(self,formatted=False):
+        pass
+    
+    def setT(self):
+        pass
